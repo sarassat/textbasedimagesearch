@@ -1,73 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Repo Documentation Generator</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header>
-      <h1>Repository Documentation</h1>
-    </header>
-    <!-- Embed the initial documentation data directly in the HTML so that
-         the site works when served via the file:// protocol. The React
-         application will parse this element if fetching docsData.json
-         fails. -->
-    <script id="docs-data" type="application/json">
-      {
-        "versions": [
-          {
-            "version": "v2025-08-03",
-            "summary": "Documentation generated on 2025‑08‑03 for the GitHub repository sarassat/textbasedimagesearch. This version reflects the state of the repository at commit fb9f650 (as seen on GitHub).",
-            "files": [
-              {
-                "path": "README.md",
-                "title": "Project overview",
-                "description": "The README introduces the project. It states the project name, **TextBasedSearch**, and briefly describes its purpose as `Text Based Search on Images`.",
-                "apiDetails": "This file does not expose any API but serves as a human‑readable description of the project.",
-                "performanceRecommendations": "No performance considerations are relevant for a README file.",
-                "vulnerabilities": "There are no vulnerabilities inherent to the README file."
-              },
-              {
-                "path": "Text_Based_Image_Retrieval.py",
-                "title": "Text_Based_Image_Retrieval.py",
-                "description": "This Python script implements a small Streamlit application for retrieving images based on textual descriptions. It loads a CSV file containing image paths, captions and pre‑computed caption embeddings, hides the Streamlit menu using CSS and displays a logo and header. The script defines several helper functions and uses OpenAI’s embedding API to convert user queries into vector representations. After computing similarity scores between the query embedding and caption embeddings stored in the data frame, it returns the top N most similar images and displays them on the page【535248545258629†L18-L74】.",
-                "apiDetails": "**Functions defined in this file:**\n\n* `convert_to_float(lst)`: Converts a textual representation of a list into a list of floats using `ast.literal_eval`【535248545258629†L24-L27】.\n* `get_embedding(text)`: Uses the OpenAI API to create an embedding for the supplied text using the `text‑embedding‑ada‑002` model【535248545258629†L31-L37】. A 1.1‑second delay is added after the API call to avoid hitting rate limits. Returns the embedding vector.\n* `vector_similarity(vec1, vec2)`: Computes the dot product between two vectors using NumPy【535248545258629†L39-L41】.\n* `search_image(images_df, user_input, n=5)`: Computes a query embedding for the user input, uses `vector_similarity` to compute similarity scores between each caption embedding in the data frame and the query embedding, sorts the results by similarity and returns the top `n` rows【535248545258629†L43-L50】.\n* `image_retrieval(user_input='None')`: Calls `search_image` and extracts the `imagePath` column to produce a list of image paths【535248545258629†L51-L56】.\n\nThe application also registers a Streamlit form that accepts a text input and, upon submission, retrieves and displays the top five matching images【535248545258629†L58-L74】.",
-                "performanceRecommendations": "* **Externalise the API key:** The OpenAI API key is hard coded in the script. Reading it from an environment variable (e.g. via `os.environ.get('OPENAI_API_KEY')`) will make deployments safer and prevent unnecessary rebuilds when the key changes.\n* **Vectorise similarity computation:** Computing dot products in a loop can be slow for large data sets. Consider storing caption embeddings in a NumPy matrix and performing a single matrix–vector multiplication to obtain similarity scores instead of using `DataFrame.apply`.\n* **Cache API responses more aggressively:** OpenAI API calls are rate limited. The script already uses Streamlit’s `@st.cache_data` decorator, but additional caching of query embeddings or results can reduce repeated calls when users submit the same query.\n* **Avoid reading CSV at module import time:** Reading the CSV and initialising the API key at the top level means the file is loaded and the API key is set on every import. Wrapping these operations inside a function or under a `if __name__ == '__main__'` guard makes the module more flexible for reuse.\n* **Remove unused imports:** `matplotlib.pyplot as plt` is imported but not used in the script; removing unused imports reduces memory footprint and speeds up load time.\n* **Use vectorised conversion:** The `convert_to_float` helper applies `float()` to each element of the caption embedding string. Using NumPy’s `np.fromstring` or list comprehension after splitting on commas could improve performance.\n",
-                "vulnerabilities": "* **Hard‑coded secrets:** The OpenAI API key is stored directly in the source code【535248545258629†L18-L21】. Anyone with access to the repository can see and misuse it. Read the key from a secure environment variable instead.\n* **Inadequate error handling:** The `try/except` around the form submission swallows all exceptions without logging, which makes debugging difficult. Logging specific exceptions and providing user‑friendly error messages would help maintainers identify issues.\n* **Resource exhaustion risk:** The script opens images in a loop and keeps them in a list. If a user requests many images or if `n` is increased, this could exhaust memory. Consider streaming images or limiting the number of images displayed.\n* **Potential injection through `ast.literal_eval`:** Although `ast.literal_eval` is safer than `eval`, parsing untrusted strings could still throw errors or be exploited if the CSV is compromised. Validate inputs and handle exceptions properly.\n"
-              },
-              {
-                "path": "requirements.txt",
-                "title": "Dependencies",
-                "description": "This file lists the Python dependencies for the project: `matplotlib`, `numpy`, `openai`, `pandas`, `Pillow` and `streamlit` with specific version pins【278579912393366†screenshot】.\nDuplicate entries for Pillow appear, which should be consolidated.",
-                "apiDetails": "No API exposed; this file merely specifies library versions.",
-                "performanceRecommendations": "Ensure dependencies are pinned to the minimum versions that satisfy functionality; unnecessary upgrades can slow down application startup.",
-                "vulnerabilities": "Be aware of known vulnerabilities in the listed packages. Keeping packages up to date and using tools like `pip‑audit` can help identify security issues."
-              },
-              {
-                "path": "test_images.csv",
-                "title": "Image metadata dataset",
-                "description": "A CSV containing image file paths, captions and pre‑computed embedding vectors for each caption. The first row contains the column headers `imagePath`, `caption` and `caption_embedding`. Each subsequent row contains a path to a JPEG file in the `imgs/test/noisy images` directory, a textual caption and a long list of numbers representing the embedding vector【918470742400499†screenshot】.",
-                "apiDetails": "This dataset is used by the Python script to compute similarity scores. It is not itself an API.",
-                "performanceRecommendations": "Because the CSV stores embedding vectors as strings, each vector must be parsed back into numeric form at runtime. Storing embeddings in a binary format (e.g. NumPy `.npy` or a database) would reduce parsing overhead and memory usage.",
-                "vulnerabilities": "Embedding vectors are high‑dimensional and could inadvertently leak information about the captions or the images if shared publicly. Ensure that the dataset does not contain sensitive images or personally identifiable information."
-              }
-            ]
-          }
-        ]
-      }
-    </script>
-    <!-- The React application will mount itself into this container -->
-    <div id="app"></div>
-    <div id="app"></div>
-    <!-- Load React and Babel from CDN. These are safe to use for small projects and
-         will be cached by GitHub Pages. -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js" crossorigin></script>
-    <!-- Our application logic lives in script.js. Using type="text/babel" lets
-         us write JSX without a build step. -->
-    <script type="text/babel" src="script.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>textbasedimagesearch Documentation</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/refresh-checker.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="nav-header">
+                <h2>textbasedimagesearch Documentation</h2>
+                <div class="version-selector">
+                    <select id="version-select" onchange="switchVersion(this.value)">
+                        <option value="v2025-08-03">v2025-08-03 (Latest)</option>
+                    </select>
+                </div>
+                <div class="last-updated">
+                    Last updated: 8/3/2025, 12:02:45 PM
+                </div>
+            </div>
+            
+            <div class="refresh-notice" id="refresh-notice" style="display: none;">
+                <div class="notice-content">
+                    <h4>🔄 Update Available</h4>
+                    <p>A newer version of the documentation is available.</p>
+                    <button onclick="location.reload()" class="refresh-btn">Refresh Now</button>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="#overview" class="nav-link">Overview</a></li>
+                <li><a href="#api-reference" class="nav-link">API Reference</a></li>
+                <li><a href="#performance" class="nav-link">Performance Analysis</a></li>
+                <li><a href="#security" class="nav-link">Security Report</a></li>
+                <li><a href="#file-structure" class="nav-link">File Structure</a></li>
+                <li><a href="#dependencies" class="nav-link">Dependencies</a></li>
+            </ul>
+        </nav>
+        
+        <main class="content">
+            <div class="documentation-frame">
+                <iframe id="doc-frame" src="versions/v2025-08-03/index.html" frameborder="0"></iframe>
+            </div>
+        </main>
+    </div>
+    
+    <script src="assets/script.js"></script>
+</body>
 </html>
